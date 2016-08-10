@@ -63,6 +63,7 @@ void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 	{
 		onCooldown = false;
 		timer = 0;
+		draw = false;
 	}
 
 	if (frameCounter >= 0.25f && !onCooldown) //if the frame counter is more then
@@ -71,10 +72,10 @@ void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 		cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
 		if (cropRect.x == 495) //if the current frame of the shoot animation at the point where he releases the arrow
 		{		
-			//myArrow Arrow(renderTarget, "arrow.png", positionRect.x, positionRect.y + 20);
-			//myArrow.setLeft(left);
-			//myArrow.Update(delta, p);
-			//draw = true;
+			myArrow = new Arrow(renderTarget, "arrow.png", positionRect.x, positionRect.y + 20);
+			myArrow->setLeft(left);
+			
+			draw = true;
 		}
 		if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
 		{
@@ -82,15 +83,20 @@ void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 			onCooldown = true;
 		}
 	}
+	if (draw)
+	{
+		myArrow->Update(delta, p);
+	}
+
 }
 
 void RangedEnemy::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
 	SDL_Rect drawingRect = { positionRect.x - cameraRect.x, positionRect.y - cameraRect.y, positionRect.w, positionRect.h }; //sets the players drawing location based on the players postion and the camera
 	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect); // create a copy of the player texture to be rendered
-	if (onCooldown)
+	if (draw)
 	{
-		//myArrow.Draw(renderTarget, cameraRect);
+		myArrow->Draw(renderTarget, cameraRect);
 	}
 }
 

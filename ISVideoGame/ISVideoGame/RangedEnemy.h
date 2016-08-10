@@ -29,6 +29,6 @@ private:
 	bool onCooldown, draw, left;
 	SDL_Scancode keys[4];
 	int health;
-	//Arrow myArrow;
+	Arrow *myArrow;
 };
 

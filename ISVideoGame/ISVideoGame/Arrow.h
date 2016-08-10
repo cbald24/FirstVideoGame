@@ -21,7 +21,7 @@ private:
 	SDL_Rect posRect;
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
-	const float moveSpeed = 250.0f;
+	const float moveSpeed = 150.0f;
 	bool pointedLeft;
 	float timer;
 	const float lifeSpan = 7.50f;

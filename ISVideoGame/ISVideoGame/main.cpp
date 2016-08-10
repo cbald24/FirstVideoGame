@@ -7,10 +7,11 @@
 #include <SDL_gamecontroller.h>
 #include"Player.h"
 #include"Tile.h"
-#include"map.h"
+#include"Map.h"
 #include"WeakGuy.h"
 #include"Boss.h"
 #include"RangedEnemy.h"
+#include"Arrow.h"
 
 Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 {
@@ -84,8 +85,6 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 	worldMap->setTiles(tiles);
 	return worldMap;
 }
-
-
 
 SDL_Texture *LoadTexture(std::string filepath, SDL_Renderer *renderTarget)
 {
@@ -184,7 +183,7 @@ int main(int argc, char* args[])
 		player1.Draw(renderTarget, cameraRect); //draws the player
 		enemy1.Draw(renderTarget, cameraRect);
 		archer.Draw(renderTarget, cameraRect);
-		green.Draw(renderTarget, cameraRect);
+		//green.Draw(renderTarget, cameraRect);
 		SDL_RenderPresent(renderTarget); //renders the new objects
 	}	
 	return 0; //end main

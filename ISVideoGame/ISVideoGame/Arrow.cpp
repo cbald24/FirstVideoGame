@@ -20,8 +20,10 @@ Arrow::Arrow(SDL_Renderer *renderTarget, std::string filepath, int x, int y)
 	posRect.x = x;
 	posRect.y = y;
 
-	cropRect.w = 32;
-	
+
+	cropRect.w /= 2;
+	posRect.h = cropRect.h;
+	posRect.w = cropRect.w;
 }
 
 
@@ -32,7 +34,16 @@ Arrow::~Arrow()
 
 void Arrow::Update(float delta, Player &p)
 {
-
+	if (pointedLeft)
+	{
+		posRect.x -= moveSpeed * delta;
+		cropRect.x = 0;
+	}
+	else
+	{
+		posRect.x += moveSpeed * delta;
+		cropRect.x = 32;
+	}
 }
 
 void Arrow::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
