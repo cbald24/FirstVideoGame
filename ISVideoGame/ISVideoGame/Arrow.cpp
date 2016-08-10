@@ -2,7 +2,7 @@
 
 
 
-Arrow::Arrow(SDL_Renderer *renderTarget, std::string filepath, int x, int y, bool left)
+Arrow::Arrow(SDL_Renderer *renderTarget, std::string filepath, int x, int y)
 {
 	SDL_Surface *surface = IMG_Load(filepath.c_str()); //reads in the players sprite sheet and sets it to a surface that will be optimized into a texture
 	if (surface == NULL) //error checks to make sure it read somethin in
@@ -23,7 +23,6 @@ Arrow::Arrow(SDL_Renderer *renderTarget, std::string filepath, int x, int y, boo
 	cropRect.w /= xFrames;
 	frameWidth = cropRect.w;
 	frameHeight = cropRect.h;
-	pointedLeft = left;
 	if (!pointedLeft)
 	{
 		cropRect.w += frameWidth;
@@ -52,10 +51,16 @@ bool Arrow::Update(float delta, Player &p)
 	{
 		delete this;
 	}
-	
+	return true;
 }
 
 void Arrow::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
+	SDL_Rect drawingRect = { posRect.x - cameraRect.x, posRect.y - cameraRect.y, posRect.w, posRect.h }; //sets the arrows drawing location based on the arrows postion and the camera
+	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect); // create a copy of the arrow texture to be rendered
+}
 
+void Arrow::setLeft(bool left)
+{
+	pointedLeft = left;
 }

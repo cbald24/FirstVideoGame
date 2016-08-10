@@ -33,6 +33,7 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 	frameHeight = positionRect.h = cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
 	onCooldown = false;
 	left = true;
+	myArrow = new Arrow(renderTarget, "arrow.png", x, y+20);
 }
 
 
@@ -42,9 +43,7 @@ RangedEnemy::~RangedEnemy()
 }
 
 void RangedEnemy::Update(float delta, Player &p)
-{
-	
-	
+{	
 	if (p.positionRect.x < positionRect.x) // if the camera is to the left of the archer
 	{
 		cropRect.y = 0;
@@ -72,6 +71,11 @@ void RangedEnemy::Update(float delta, Player &p)
 	{
 		frameCounter = 0; //set frame counter to 0
 		cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
+		if (cropRect.x == 495) //if the current frame of the shoot animation at the point where he releases the arrow
+		{
+			myArrow->setLeft(left);
+
+		}
 		if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
 		{
 			cropRect.x = 0; //reset back to first frame

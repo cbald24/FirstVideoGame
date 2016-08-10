@@ -6,6 +6,7 @@
 #include<iostream>
 #include<cmath>
 #include"Player.h"
+#include"Arrow.h"
 
 class RangedEnemy
 {
@@ -30,5 +31,6 @@ private:
 	SDL_Scancode keys[4];
 	int health;
 	bool left;
+	Arrow *myArrow;
 };
 

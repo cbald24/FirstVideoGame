@@ -15,11 +15,11 @@
 Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 {
 	int mapHeight, mapWidth, tileSize, tileID, col;
-	bool solid = false;
-	Tile* tiles; 
+	bool solid = false; 
 	Map *worldMap = new Map();
-	Tile* tileSet = {};
+	Tile* tileSet[2];
 	Tile* tempTile = new Tile();
+	Tile* tiles[100 * 100];
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError eResult = doc.LoadFile(filepath.c_str());
 	if (eResult != tinyxml2::XML_SUCCESS)
@@ -30,6 +30,8 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 	node->QueryIntAttribute("width", &mapWidth);
 	node->QueryIntAttribute("height", &mapHeight);
 	node->QueryIntAttribute("tilewidth", &tileSize);
+	int tilesNeeded = mapHeight * mapWidth;
+	
 	worldMap->setMapHeight(mapHeight);
 	worldMap->setMapWidth(mapHeight);
 	worldMap->setTileSize(tileSize);
@@ -45,11 +47,15 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 		node->FirstChildElement("properties")->FirstChildElement("property");
 		node->QueryBoolAttribute("value", &solid);
 		tempTile = new Tile(solid, tileID, "ksu log.png", renderTargert, col, tileSize);
-		tileSet[i] = *tempTile;
+		tileSet[i] = tempTile;
 		node = temp->NextSiblingElement("tile");
 	}
-	
-
+	node = node->Parent;
+	node = node->NextSiblingElement("layer")->FirstChildElement("data")->FirstChildElement("tile");
+	for (int j = 0; j < (100 * 100); j++)
+	{
+		tile
+	}
 
 	return worldMap;
 }
