@@ -112,7 +112,7 @@ int main(int argc, char* args[])
 	SDL_Texture *texture = LoadTexture("ground.png", renderTarget); //creates and temp map to use till tiled read in works
 	SDL_QueryTexture(texture, NULL, NULL, &levelWidth, &levelHeight);
 
-	//Map *daMap = ReadMap("backgroundTest.tmx", renderTarget);
+	Map *daMap = ReadMap("backgroundTest.tmx", renderTarget);
 
 	bool isRunning = true; //set bool to true to make loop go infinetly till game needs exited
 	while (isRunning) //loop that manages the game actions

@@ -29,5 +29,6 @@ private:
 	bool onCooldown;
 	SDL_Scancode keys[4];
 	int health;
+	bool left;
 };
 

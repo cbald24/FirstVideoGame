@@ -32,7 +32,7 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 	frameWidth = positionRect.w = cropRect.w; //sets the framewidth and postion rect's width based on the crop rects width
 	frameHeight = positionRect.h = cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
 	onCooldown = false;
-
+	left = true;
 }
 
 
@@ -48,10 +48,12 @@ void RangedEnemy::Update(float delta, Player &p)
 	if (p.positionRect.x < positionRect.x) // if the camera is to the left of the archer
 	{
 		cropRect.y = 0;
+		left = true;
 	}
 	else
 	{
 		cropRect.y = frameHeight;
+		left = false;
 	}
 
 	frameCounter += 2 * delta; //update the frame counter
