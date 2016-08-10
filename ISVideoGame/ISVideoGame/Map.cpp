@@ -49,7 +49,10 @@ void Map::setTileSize(int ts)
 	tileSize = ts;
 }
 
-void Map::setTiles(Tile* t)
+void Map::setTiles(Tile* t[375])
 {
-	tiles[0] = t;
+	for (int i = 0; i < 375; i++)
+	{
+		tiles[i] = t[i];
+	}
 }

@@ -5,7 +5,7 @@
 class Tile
 {
 public:
-	Tile(bool s, int id, std::string filepath, SDL_Renderer *renderTarget, int col, int ts);
+	Tile(bool s, int id, std::string filepath, SDL_Renderer *renderTarget, int col, int ts, bool k);
 	Tile();
 	~Tile();
 	int getID();
@@ -14,7 +14,7 @@ public:
 private:
 	int tileID;
 	bool solid;
-	//bool willKill;
+	bool willKill;
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
 	SDL_Rect postionRect;

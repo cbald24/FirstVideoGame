@@ -13,12 +13,10 @@ public:
 	Arrow(SDL_Renderer *renderTarget, std::string filepath, int x, int y);
 	~Arrow();
 
-	bool Update(float delta, Player &p);
+	void Update(float delta, Player &p);
 	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
 	void setLeft(bool left);
 private:
-	const int xFrames = 2;
-	const int yFrames = 1;
 	int frameWidth, frameHeight;
 	SDL_Rect posRect;
 	SDL_Rect cropRect;

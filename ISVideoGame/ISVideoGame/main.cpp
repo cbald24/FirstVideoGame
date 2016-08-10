@@ -15,11 +15,12 @@
 Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 {
 	int mapHeight, mapWidth, tileSize, tileID, col;
-	bool solid = false; 
+	bool solid; 
+	bool kill;
 	Map *worldMap = new Map();
-	Tile* tileSet[2];
+	Tile* tileSet[20];
 	Tile* tempTile = new Tile();
-	Tile* tiles[100 * 100];
+	Tile* tiles[375];
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError eResult = doc.LoadFile(filepath.c_str());
 	if (eResult != tinyxml2::XML_SUCCESS)
@@ -27,8 +28,8 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 		std::cout << "Problem Reading in xml" << std::endl;
 	}
 	tinyxml2::XMLElement * node = doc.FirstChildElement("map");
-	node->QueryIntAttribute("width", &mapWidth);
-	node->QueryIntAttribute("height", &mapHeight);
+	node->QueryIntAttribute("width", &mapWidth); //gets the number of tiles in the width of the map
+	node->QueryIntAttribute("height", &mapHeight); //gets the number of tiles in the height of the map
 	node->QueryIntAttribute("tilewidth", &tileSize);
 	int tilesNeeded = mapHeight * mapWidth;
 	
@@ -38,25 +39,49 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 
 	node = node->FirstChildElement("tileset");
 	node->QueryIntAttribute("columns", &col);
+	tinyxml2::XMLElement *fallBack = node;
 	node = node->FirstChildElement("tile");
 	tinyxml2::XMLElement *temp;
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		temp = node;
 		node->QueryIntAttribute("id", &tileID);
-		node->FirstChildElement("properties")->FirstChildElement("property");
-		node->QueryBoolAttribute("value", &solid);
-		tempTile = new Tile(solid, tileID, "ksu log.png", renderTargert, col, tileSize);
+		node = node->FirstChildElement("properties")->FirstChildElement("property");
+		kill = node->BoolAttribute("value");
+		node = node->NextSiblingElement();
+		solid = node->BoolAttribute("value");
+		tempTile = new Tile(solid, tileID, "tiles.png", renderTargert, col, tileSize, kill);
 		tileSet[i] = tempTile;
 		node = temp->NextSiblingElement("tile");
 	}
-	node = node->Parent;
-	node = node->NextSiblingElement("layer")->FirstChildElement("data")->FirstChildElement("tile");
-	for (int j = 0; j < (100 * 100); j++)
+	node = fallBack;
+	node = node->NextSiblingElement("layer")->FirstChildElement("data");
+	bool found = false;
+	int count = 0;
+	int j = 0;
+	for (tinyxml2::XMLElement *child = node->FirstChildElement("tile"); child != NULL; child = child->NextSiblingElement())
 	{
-		tile
-	}
+		found = false; 
+		tileID = child->IntAttribute("gid");	
 
+		while (!found)
+		{
+			if (tileSet[count]->getID() == tileID-1)
+			{
+				tiles[j] = tileSet[count];
+				tiles[j]->setLocation(mapHeight, mapWidth, j);
+				count = 0;
+				found = true;
+			}
+			else
+			{
+				count++;
+			}
+		}
+		node->NextSiblingElement();
+		j++;
+	}
+	worldMap->setTiles(tiles);
 	return worldMap;
 }
 
@@ -96,7 +121,7 @@ int main(int argc, char* args[])
 	const int screenHeight = 400; //the window height in pixels
 	const int screenWidth = 750; //the window width in pixels
 	SDL_Rect cameraRect = { 0, 0, screenWidth, screenHeight }; //the SDL rect that wil be the camera set to the same dimensions as the game window
-	int levelWidth = 1500; //the default width of the level
+	int levelWidth = 1600; //the default width of the level
 	int levelHeight = 800; //the default height of the level
 	
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER); //inits the video and controller functions to operate the game
@@ -107,14 +132,13 @@ int main(int argc, char* args[])
 		std::cout << "Error" << IMG_GetError() << std::endl; //error message
 	}
 
-
 	window = SDL_CreateWindow("Independent Study: THE GAME", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_SHOWN); //creates the game window, gives it a title and makes it display
 	renderTarget = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //creates the renderer and sets its target to the game window
 	
 	Player player1 = Player(renderTarget, "playerSprites.png", 0, 0, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
 	WeakGuy enemy1 = WeakGuy(renderTarget, "weakBadGuy.png", 500, 500, 9, 3);
 	RangedEnemy archer = RangedEnemy(renderTarget, "rangedBadGuy.png", 300, 300, 13, 3);
-
+	Arrow green = Arrow(renderTarget, "arrow.png", 200, 320);
 	SDL_Texture *texture = LoadTexture("ground.png", renderTarget); //creates and temp map to use till tiled read in works
 	SDL_QueryTexture(texture, NULL, NULL, &levelWidth, &levelHeight);
 
@@ -135,7 +159,8 @@ int main(int argc, char* args[])
 		keyState = SDL_GetKeyboardState(NULL);//this will find which keys are being pressed
 		player1.Update(delta, keyState); //this passes the delta and updates the players sprite and postion
 		enemy1.Update(delta, keyState);
-		archer.Update(delta, player1);
+		archer.Update(delta, player1, renderTarget);
+		//green.Update(delta, player1);
 
 		player1.IntersectsWith(enemy1);
 
@@ -159,6 +184,7 @@ int main(int argc, char* args[])
 		player1.Draw(renderTarget, cameraRect); //draws the player
 		enemy1.Draw(renderTarget, cameraRect);
 		archer.Draw(renderTarget, cameraRect);
+		green.Draw(renderTarget, cameraRect);
 		SDL_RenderPresent(renderTarget); //renders the new objects
 	}	
 	return 0; //end main

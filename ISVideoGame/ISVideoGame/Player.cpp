@@ -27,7 +27,6 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 
 	textureWidth = cropRect.w; //sets the width of the texture 
 
-	
 	cropRect.w /= framesX; //sets the width of the crop rectangle based on the number a frames passed
 	cropRect.h /= framesY; //sets the height of the crop rectangle based on the number of frames passed
 

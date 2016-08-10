@@ -13,9 +13,8 @@ class RangedEnemy
 public:
 	RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x, int y, int framesX, int framesY);
 	~RangedEnemy();
-	void Update(float delta, Player &p);
-	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
-	
+	void Update(float delta, Player &p, SDL_Renderer *renderTarget);
+	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);	
 	int getPosX();
 	int getPosY();
 	SDL_Rect positionRect;
@@ -27,10 +26,9 @@ private:
 	float frameCounter;
 	int frameWidth, frameHeight;
 	int textureWidth;
-	bool onCooldown;
+	bool onCooldown, draw, left;
 	SDL_Scancode keys[4];
 	int health;
-	bool left;
-	Arrow *myArrow;
+	//Arrow myArrow;
 };
 

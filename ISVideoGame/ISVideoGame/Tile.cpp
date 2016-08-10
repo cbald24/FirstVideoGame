@@ -1,10 +1,10 @@
 #include "Tile.h"
 
 
-Tile::Tile(bool s, int id, std::string filepath, SDL_Renderer *renderTarget, int col, int ts)
+Tile::Tile(bool s, int id, std::string filepath, SDL_Renderer *renderTarget, int col, int ts, bool k)
 {
 	solid = s;
-	//willKill = k;
+	willKill = k;
 	tileID = id;
 	SDL_Surface *surface = IMG_Load(filepath.c_str()); //reads in the players sprite sheet and sets it to a surface that will be optimized into a texture
 	if (surface == NULL) //error checks to make sure it read somethin in

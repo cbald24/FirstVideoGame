@@ -23,9 +23,7 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 	positionRect.y = y; //sets the player's y postion on the world map
 
 	textureWidth = cropRect.w; //sets the width of the texture 
-
 	
-
 	cropRect.w /= framesX; //sets the width of the crop rectangle based on the number a frames passed
 	cropRect.h /= framesY; //sets the height of the crop rectangle based on the number of frames passed
 
@@ -33,7 +31,7 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 	frameHeight = positionRect.h = cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
 	onCooldown = false;
 	left = true;
-	myArrow = new Arrow(renderTarget, "arrow.png", x, y+20);
+	draw = false;
 }
 
 
@@ -42,7 +40,7 @@ RangedEnemy::~RangedEnemy()
 	SDL_DestroyTexture(texture);//destroys the archers texture to prevent memory leak
 }
 
-void RangedEnemy::Update(float delta, Player &p)
+void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 {	
 	if (p.positionRect.x < positionRect.x) // if the camera is to the left of the archer
 	{
@@ -72,9 +70,11 @@ void RangedEnemy::Update(float delta, Player &p)
 		frameCounter = 0; //set frame counter to 0
 		cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
 		if (cropRect.x == 495) //if the current frame of the shoot animation at the point where he releases the arrow
-		{
-			myArrow->setLeft(left);
-
+		{		
+			//myArrow Arrow(renderTarget, "arrow.png", positionRect.x, positionRect.y + 20);
+			//myArrow.setLeft(left);
+			//myArrow.Update(delta, p);
+			//draw = true;
 		}
 		if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
 		{
@@ -88,6 +88,10 @@ void RangedEnemy::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
 	SDL_Rect drawingRect = { positionRect.x - cameraRect.x, positionRect.y - cameraRect.y, positionRect.w, positionRect.h }; //sets the players drawing location based on the players postion and the camera
 	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect); // create a copy of the player texture to be rendered
+	if (onCooldown)
+	{
+		//myArrow.Draw(renderTarget, cameraRect);
+	}
 }
 
 int RangedEnemy::getPosX()
