@@ -56,17 +56,8 @@ This method will update the player's current postion and the next frame in his a
 void Player::Update(float delta, const Uint8 *keyState)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
-	if (keyState[keys[0]]) //if the key being pushed is w
-	{
-		positionRect.y -= moveSpeed * delta;
-		cropRect.y = 0;
-	}
-	else if (keyState[keys[1]]) //if the key being pushed is s
-	{
-		positionRect.y += moveSpeed * delta;
-		cropRect.y = frameHeight;
-	}
-	else if (keyState[keys[2]]) //if the key being pushed is a
+
+	if (keyState[keys[2]]) //if the key being pushed is a
 	{
 		
 		positionRect.x -= moveSpeed * delta;
@@ -81,7 +72,7 @@ void Player::Update(float delta, const Uint8 *keyState)
 	{
 		isActive = false; //set the players is active bool to false
 	}
-
+	//positionRect.y += 118 *delta;
 	if (isActive) //if the player is active
 	{
 		frameCounter += 2 * delta; //update the frame counter

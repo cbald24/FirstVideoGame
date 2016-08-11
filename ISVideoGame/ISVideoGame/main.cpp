@@ -13,15 +13,15 @@
 #include"RangedEnemy.h"
 #include"Arrow.h"
 
-Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
+Map ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 {
 	int mapHeight, mapWidth, tileSize, tileID, col;
 	bool solid; 
 	bool kill;
-	Map *worldMap = new Map();
-	Tile* tileSet[20];
-	Tile* tempTile = new Tile();
-	Tile* tiles[375];
+	Map worldMap = Map();
+	Tile tileSet[20];
+	Tile tempTile;
+	Tile tiles[375];
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError eResult = doc.LoadFile(filepath.c_str());
 	if (eResult != tinyxml2::XML_SUCCESS)
@@ -34,9 +34,9 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 	node->QueryIntAttribute("tilewidth", &tileSize);
 	int tilesNeeded = mapHeight * mapWidth;
 	
-	worldMap->setMapHeight(mapHeight);
-	worldMap->setMapWidth(mapHeight);
-	worldMap->setTileSize(tileSize);
+	worldMap.setMapHeight(mapHeight);
+	worldMap.setMapWidth(mapWidth);
+	worldMap.setTileSize(tileSize);
 
 	node = node->FirstChildElement("tileset");
 	node->QueryIntAttribute("columns", &col);
@@ -51,7 +51,7 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 		kill = node->BoolAttribute("value");
 		node = node->NextSiblingElement();
 		solid = node->BoolAttribute("value");
-		tempTile = new Tile(solid, tileID, "tiles.png", renderTargert, col, tileSize, kill);
+		tempTile = Tile(solid, tileID, "tiles.png", renderTargert, col, tileSize, kill);
 		tileSet[i] = tempTile;
 		node = temp->NextSiblingElement("tile");
 	}
@@ -64,13 +64,12 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 	{
 		found = false; 
 		tileID = child->IntAttribute("gid");	
-
 		while (!found)
 		{
-			if (tileSet[count]->getID() == tileID-1)
+			if (tileSet[count].getID() == tileID-1)
 			{
 				tiles[j] = tileSet[count];
-				tiles[j]->setLocation(mapHeight, mapWidth, j);
+				tiles[j].setLocation(mapHeight, mapWidth, j);
 				count = 0;
 				found = true;
 			}
@@ -82,7 +81,7 @@ Map *ReadMap(std::string filepath, SDL_Renderer *renderTargert)
 		node->NextSiblingElement();
 		j++;
 	}
-	worldMap->setTiles(tiles);
+	worldMap.setTiles(tiles);
 	return worldMap;
 }
 
@@ -106,6 +105,8 @@ SDL_Texture *LoadTexture(std::string filepath, SDL_Renderer *renderTarget)
 	return texture;
 }
 
+
+
 int main(int argc, char* args[])
 {
 	SDL_Window *window = nullptr; //the window the game pops up in
@@ -120,8 +121,8 @@ int main(int argc, char* args[])
 	const int screenHeight = 400; //the window height in pixels
 	const int screenWidth = 750; //the window width in pixels
 	SDL_Rect cameraRect = { 0, 0, screenWidth, screenHeight }; //the SDL rect that wil be the camera set to the same dimensions as the game window
-	int levelWidth = 1600; //the default width of the level
-	int levelHeight = 800; //the default height of the level
+	int levelWidth; //the default width of the level
+	int levelHeight; //the default height of the level
 	
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER); //inits the video and controller functions to operate the game
 
@@ -133,15 +134,14 @@ int main(int argc, char* args[])
 
 	window = SDL_CreateWindow("Independent Study: THE GAME", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_SHOWN); //creates the game window, gives it a title and makes it display
 	renderTarget = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //creates the renderer and sets its target to the game window
-	
-	Player player1 = Player(renderTarget, "playerSprites.png", 0, 0, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
-	WeakGuy enemy1 = WeakGuy(renderTarget, "weakBadGuy.png", 500, 500, 9, 3);
-	RangedEnemy archer = RangedEnemy(renderTarget, "rangedBadGuy.png", 300, 300, 13, 3);
-	Arrow green = Arrow(renderTarget, "arrow.png", 200, 320);
-	SDL_Texture *texture = LoadTexture("ground.png", renderTarget); //creates and temp map to use till tiled read in works
-	SDL_QueryTexture(texture, NULL, NULL, &levelWidth, &levelHeight);
 
-	Map *daMap = ReadMap("backgroundTest.tmx", renderTarget);
+	Map daMap = ReadMap("backgroundTest.tmx", renderTarget);
+	levelHeight = daMap.getMapHeight() * daMap.getTileSize();
+	levelWidth = daMap.getMapWidth() * daMap.getTileSize();
+
+	Player player1 = Player(renderTarget, "playerSprites.png", 0, levelHeight-288-46, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
+	WeakGuy enemy1 = WeakGuy(renderTarget, "weakBadGuy.png", 500, levelHeight-288-50, 9, 3);
+	RangedEnemy archer = RangedEnemy(renderTarget, "rangedBadGuy.png", 1000, levelHeight - 288-55, 13, 3);
 
 	bool isRunning = true; //set bool to true to make loop go infinetly till game needs exited
 	while (isRunning) //loop that manages the game actions
@@ -159,7 +159,6 @@ int main(int argc, char* args[])
 		player1.Update(delta, keyState); //this passes the delta and updates the players sprite and postion
 		enemy1.Update(delta, keyState);
 		archer.Update(delta, player1, renderTarget);
-		//green.Update(delta, player1);
 
 		player1.IntersectsWith(enemy1);
 
@@ -177,8 +176,9 @@ int main(int argc, char* args[])
 			cameraRect.y = levelHeight - 400;
 
 		SDL_RenderClear(renderTarget); //clears the old render objects
-		SDL_RenderCopy(renderTarget, texture, &cameraRect, NULL); //sets the renderer after the wipe
+		//SDL_RenderCopy(renderTarget, texture, &cameraRect, NULL); //sets the renderer after the wipe
 		
+		daMap.renderTiles(cameraRect, renderTarget);
 
 		player1.Draw(renderTarget, cameraRect); //draws the player
 		enemy1.Draw(renderTarget, cameraRect);

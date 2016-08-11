@@ -20,7 +20,7 @@ Tile::Tile(bool s, int id, std::string filepath, SDL_Renderer *renderTarget, int
 	SDL_FreeSurface(surface); //free the SDL surface from the memory
 	
 	//SDL_QueryTexture(texture, NULL, NULL, &cropRect.w, &cropRect.h);
-	cropRect.w = cropRect.h = postionRect.h = postionRect.w = ts;
+	cropRect.w = cropRect.h = positionRect.h = positionRect.w = ts;
 	cropRect.x = ((id % col) * cropRect.w); //take the id number which also resembles the index in the imaginary
 	cropRect.y = ((id / col) * cropRect.h);
 
@@ -38,18 +38,22 @@ Tile::~Tile()
 
 }
 
-void Tile::Render(SDL_Renderer *renderTarget)
+void Tile::Render(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
-	
+	SDL_Rect drawingRect = { positionRect.x - cameraRect.x, positionRect.y - cameraRect.y, positionRect.w, positionRect.h }; //sets the tile's drawing location based on the players postion and the camera
+	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect);
 }
 
 int Tile::getID()
 {
 	return tileID;
 }
-
+/*
+sets the tiles location based on a formula using the height and width of the map and the number in line the tile is
+*/
 void Tile::setLocation(int mapHeight, int mapWidth, int number)
 {
-	postionRect.x = (number % mapWidth) * cropRect.w;
-	postionRect.y = (number / mapHeight) * cropRect.h;
+	positionRect.x = (number % mapWidth) * cropRect.w;
+	positionRect.y = (number / mapWidth) * cropRect.h;
 }
+

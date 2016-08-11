@@ -9,15 +9,15 @@ public:
 	Tile();
 	~Tile();
 	int getID();
-	void Render(SDL_Renderer *renderTarget);
+	void Render(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
 	void setLocation(int mapHeight, int mapWidth, int number);
+	SDL_Rect positionRect;
 private:
 	int tileID;
 	bool solid;
 	bool willKill;
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
-	SDL_Rect postionRect;
 
 };
 
