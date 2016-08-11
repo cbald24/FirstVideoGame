@@ -41,9 +41,9 @@ int Map::getTileSize()
 /*
 this method will return the maps tiles variable to be used by other functions
 */
-Tile* Map::getTiles()
+Tile Map::getTiles()
 {
-	return tiles;
+	return tiles[0];
 }
 /*
 param (int mh): this int represents the map height
@@ -112,7 +112,7 @@ bool Map::checkCollision(SDL_Rect a, SDL_Rect b)
 	int bottomA, bottomB;
 
 	//Calculate the sides of rect A
-	leftA = b.x;
+	leftA = a.x;
 	rightA = a.x + a.w;
 	topA = a.y;
 	bottomA = a.y + a.h;

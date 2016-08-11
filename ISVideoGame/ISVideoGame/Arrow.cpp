@@ -36,12 +36,12 @@ void Arrow::Update(float delta, Player &p)
 {
 	if (pointedLeft)
 	{
-		posRect.x -= moveSpeed * delta;
+		posRect.x -= (moveSpeed * delta);
 		cropRect.x = 0;
 	}
 	else
 	{
-		posRect.x += moveSpeed * delta;
+		posRect.x += (moveSpeed * delta);
 		cropRect.x = 32;
 	}
 }

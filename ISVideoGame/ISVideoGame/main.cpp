@@ -139,7 +139,7 @@ int main(int argc, char* args[])
 	levelHeight = daMap.getMapHeight() * daMap.getTileSize();
 	levelWidth = daMap.getMapWidth() * daMap.getTileSize();
 
-	Player player1 = Player(renderTarget, "playerSprites.png", 0, levelHeight-288-46, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
+	Player player1 = Player(renderTarget, "playerSprites.png", 0, levelHeight-288, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
 	WeakGuy enemy1 = WeakGuy(renderTarget, "weakBadGuy.png", 500, levelHeight-288-50, 9, 3);
 	RangedEnemy archer = RangedEnemy(renderTarget, "rangedBadGuy.png", 1000, levelHeight - 288-55, 13, 3);
 
@@ -156,7 +156,7 @@ int main(int argc, char* args[])
 		}
 		
 		keyState = SDL_GetKeyboardState(NULL);//this will find which keys are being pressed
-		player1.Update(delta, keyState); //this passes the delta and updates the players sprite and postion
+		player1.Update(delta, keyState, daMap); //this passes the delta and updates the players sprite and postion
 		enemy1.Update(delta, keyState);
 		archer.Update(delta, player1, renderTarget);
 

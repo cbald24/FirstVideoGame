@@ -30,8 +30,11 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 	cropRect.w /= framesX; //sets the width of the crop rectangle based on the number a frames passed
 	cropRect.h /= framesY; //sets the height of the crop rectangle based on the number of frames passed
 
-	frameWidth = positionRect.w = cropRect.w; //sets the framewidth and postion rect's width based on the crop rects width
+	frameWidth = cropRect.w; //sets the framewidth and postion rect's width based on the crop rects width
 	frameHeight = positionRect.h =  cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
+	positionRect.w = cropRect.w;
+	positionRect.h = cropRect.h;
+
 	isActive = false;
 
 	keys[0] = SDL_SCANCODE_W; //sets first key of the array to a 'w key pressed' code
@@ -53,19 +56,23 @@ Player::~Player()
 (param) const Uint8 *keyState: the current state of the keyboards button presses
 This method will update the player's current postion and the next frame in his animation
 */
-void Player::Update(float delta, const Uint8 *keyState)
+void Player::Update(float delta, const Uint8 *keyState, Map m)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
-
+	int index = ((positionRect.y / m.getTileSize()) * m.getMapWidth()) + (positionRect.x / m.getTileSize());
+	
 	if (keyState[keys[2]]) //if the key being pushed is a
-	{
-		
-		positionRect.x -= moveSpeed * delta;
+	{		
+		positionRect.x -= (moveSpeed * delta);
 		cropRect.y = frameHeight * 2;	
+		//if (tiles[index].getSolid())
+		//{
+		//	positionRect.x += moveSpeed * delta;
+		//}
 	}
 	else if (keyState[keys[3]]) //if the key being pushed is d
 	{
-		positionRect.x += moveSpeed * delta;
+		positionRect.x += (moveSpeed * delta);
 		cropRect.y = frameHeight * 3;
 	}
 	else //if none of the correct keys are being pushed
@@ -116,8 +123,7 @@ int Player::getPosY()
 
 bool Player::IntersectsWith(WeakGuy &enemy)
 {
-	if (positionRect.x + positionRect.w < enemy.positionRect.x || positionRect.x > enemy.positionRect.x + enemy.positionRect.w
-		|| positionRect.y + positionRect.h < enemy.positionRect.y || positionRect.y > enemy.positionRect.y + enemy.positionRect.h)
+	if (checkCollision(enemy.positionRect))
 	{
 		SDL_SetTextureColorMod(texture, 255, 255, 255);
 		return false;
@@ -127,4 +133,61 @@ bool Player::IntersectsWith(WeakGuy &enemy)
 		SDL_SetTextureColorMod(texture, 250, 0, 0);
 		return true;
 	}
+}
+
+/*
+Param (SDL_Rect a): the first rect to use for collision detection
+Param (SDL_Rect b): the second rect to use for collision detection
+Return (bool) a bool that reflects if a nd b collide with each other
+decripstion: this method is borrowed from http://lazyfoo.net/SDL_tutorials/lesson17/ and will find i out if 2 sdl rects are overlapping or next to each other
+if they are it returns true if not it returns false
+*/
+bool Player::checkCollision(SDL_Rect a)
+{
+	if (positionRect.x + positionRect.w < a.x || positionRect.x > a.x + a.w
+		|| positionRect.y + positionRect.h < a.y || positionRect.y > a.y + a.h)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Player::checkMapCollision(SDL_Rect a)
+{
+	int leftA, leftB;
+	int rightA, rightB;
+	int topA, topB;
+	int bottomA, bottomB;
+
+	//Calculate the sides of rect A
+	leftA = a.x;
+	rightA = a.x + a.w;
+	topA = a.y;
+	bottomA = a.y + a.h;
+
+	//Calculate the sides of rect B
+	leftB = positionRect.x;
+	rightB = positionRect.x + positionRect.w;
+	topB = positionRect.y;
+	bottomB = positionRect.y + positionRect.h;
+
+	//If any of the sides from A are outside of B
+	if (bottomA < topB)
+	{
+		return false;
+	}
+	if (topA > bottomB)
+	{
+		return false;
+	}
+	if (rightA < leftB)
+	{
+		return false;
+	}
+	if (leftA > rightB)
+	{
+		return false;
+	}
+	//If none of the sides from A are outside B
+	return true;
 }

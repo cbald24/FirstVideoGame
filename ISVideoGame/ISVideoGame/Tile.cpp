@@ -57,3 +57,12 @@ void Tile::setLocation(int mapHeight, int mapWidth, int number)
 	positionRect.y = (number / mapWidth) * cropRect.h;
 }
 
+bool Tile::getKill()
+{
+	return willKill;
+}
+
+bool Tile::getSolid()
+{
+	return solid;
+}

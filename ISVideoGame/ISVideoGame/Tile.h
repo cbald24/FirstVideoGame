@@ -12,12 +12,13 @@ public:
 	void Render(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
 	void setLocation(int mapHeight, int mapWidth, int number);
 	SDL_Rect positionRect;
+	bool getSolid();
+	bool getKill();
 private:
-	int tileID;
-	bool solid;
-	bool willKill;
+	int tileID;	
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
-
+	bool solid;
+	bool willKill;
 };
 
