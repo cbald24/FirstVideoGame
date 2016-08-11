@@ -34,11 +34,11 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 	frameHeight = positionRect.h =  cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
 	positionRect.w = cropRect.w;
 	positionRect.h = cropRect.h;
-
+	left = false;
 	isActive = false;
-
-	keys[0] = SDL_SCANCODE_W; //sets first key of the array to a 'w key pressed' code
-	keys[1] = SDL_SCANCODE_S; //sets second key of the array to a 'w key pressed' code
+	onCooldown = false;
+	keys[0] = SDL_SCANCODE_Q; //sets first key of the array to a 'w key pressed' code
+	keys[1] = SDL_SCANCODE_SPACE; //sets second key of the array to a 'w key pressed' code
 	keys[2] = SDL_SCANCODE_A;//sets third key of the array to a 'w key pressed' code
 	keys[3] = SDL_SCANCODE_D;//sets fourth key of the array to a 'w key pressed' code
 
@@ -56,15 +56,54 @@ Player::~Player()
 (param) const Uint8 *keyState: the current state of the keyboards button presses
 This method will update the player's current postion and the next frame in his animation
 */
-void Player::Update(float delta, const Uint8 *keyState, Map m)
+void Player::Update(float delta, const Uint8 *keyState, Map m, SDL_Renderer *renderTarget)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
+	if (onCooldown)
+	{
+		timer -= delta;
+		if (timer <= 0)
+		{
+			onCooldown = false;
+		}
+		else if (timer <= 1)
+		{
+			fistOfFury = nullptr;
+		}
+		else
+		{
+			timer -= delta;
+			fistOfFury->Update(positionRect.x, positionRect.y - 12, left);
+		}
+	}
 	int index = ((positionRect.y / m.getTileSize()) * m.getMapWidth()) + (positionRect.x / m.getTileSize());
-	
-	if (keyState[keys[2]]) //if the key being pushed is a
+	if (keyState[keys[0]])
+	{
+		if (!onCooldown)
+		{
+			if (left)
+			{
+				fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x, positionRect.y - 12);
+				onCooldown = true;
+				timer = cd;
+			}
+			else
+			{
+				fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x + 34, positionRect.y - 12);
+				onCooldown = true;
+				timer = cd;
+			}
+		}
+	}
+	else if (keyState[keys[1]])
+	{
+		positionRect.y -= moveSpeed * delta;
+	}
+	else if (keyState[keys[2]]) //if the key being pushed is a
 	{		
 		positionRect.x -= (moveSpeed * delta);
 		cropRect.y = frameHeight * 2;	
+		left = true;
 		//if (tiles[index].getSolid())
 		//{
 		//	positionRect.x += moveSpeed * delta;
@@ -74,31 +113,15 @@ void Player::Update(float delta, const Uint8 *keyState, Map m)
 	{
 		positionRect.x += (moveSpeed * delta);
 		cropRect.y = frameHeight * 3;
-	}
+		left = false;
+	}	
 	else //if none of the correct keys are being pushed
 	{
 		isActive = false; //set the players is active bool to false
 	}
-	//positionRect.y += 118 *delta;
-	if (isActive) //if the player is active
-	{
-		frameCounter += 2 * delta; //update the frame counter
 
-		if (frameCounter >= 0.25f) //if the frame counter is more then
-		{
-			frameCounter = 0; //set frame counter to 0
-			cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
-			if(cropRect.x >= textureWidth) //if at the end of the sprite sheet
-			{
-				cropRect.x = 0; //reset back to first frame
-			}
-		}
-	}
-	else //if inactive
-	{
-		frameCounter = 0; //set current player frame to 0 
-		cropRect.x = 0; //set idle postion for sprite sheet
-	}
+	updateFrame(isActive, delta);
+
 }
 /*
 (param) SDL_Renderer *renderTarget: a pointer to the render location
@@ -109,13 +132,21 @@ void Player::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
 	SDL_Rect drawingRect = { positionRect.x - cameraRect.x, positionRect.y - cameraRect.y, positionRect.w, positionRect.h }; //sets the players drawing location based on the players postion and the camera
 	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect); // create a copy of the player texture to be rendered
+	if (onCooldown && fistOfFury != nullptr)
+	{
+		fistOfFury->Draw(renderTarget, cameraRect);
+	}
 }
-
+/*
+Description: returns the x postion of the player
+*/
 int Player::getPosX()
 {
 	return positionRect.x; //returns the players x location in the world
 }
-
+/*
+Description: returns the y postion of the player
+*/
 int Player::getPosY()
 {
 	return positionRect.y; //returns the players y location in the world
@@ -190,4 +221,30 @@ bool Player::checkMapCollision(SDL_Rect a)
 	}
 	//If none of the sides from A are outside B
 	return true;
+}
+/*
+Param (float d):this will be the delta value that was given to the update method
+description: this method will handle the updating the player frame and helps declutter the update method
+*/
+void Player::updateFrame(bool a, float d)
+{
+	if (a) //if the player is active
+	{
+		frameCounter += 2 * d; //update the frame counter
+
+		if (frameCounter >= 0.25f) //if the frame counter is more then
+		{
+			frameCounter = 0; //set frame counter to 0
+			cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
+			if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
+			{
+				cropRect.x = 0; //reset back to first frame
+			}
+		}
+	}
+	else //if inactive
+	{
+		frameCounter = 0; //set current player frame to 0 
+		cropRect.x = 0; //set idle postion for sprite sheet
+	}
 }

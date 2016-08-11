@@ -156,7 +156,7 @@ int main(int argc, char* args[])
 		}
 		
 		keyState = SDL_GetKeyboardState(NULL);//this will find which keys are being pressed
-		player1.Update(delta, keyState, daMap); //this passes the delta and updates the players sprite and postion
+		player1.Update(delta, keyState, daMap, renderTarget); //this passes the delta and updates the players sprite and postion
 		enemy1.Update(delta, keyState);
 		archer.Update(delta, player1, renderTarget);
 

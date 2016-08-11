@@ -38,6 +38,7 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 RangedEnemy::~RangedEnemy()
 {
 	SDL_DestroyTexture(texture);//destroys the archers texture to prevent memory leak
+	myArrow->~Arrow();
 }
 
 void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
