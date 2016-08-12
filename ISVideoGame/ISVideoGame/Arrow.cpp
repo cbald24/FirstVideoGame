@@ -41,8 +41,8 @@ void Arrow::Update(float delta, Player &p)
 	}
 	else
 	{
-		posRect.x += (moveSpeed * delta);
-		cropRect.x = 32;
+		posRect.x += (moveSpeed * delta) + 1; // by adding one it prevents the int from rounding off, with out it the arrow would move at 4 pixels/frame to the left and 3/frame to the right
+		cropRect.x = 32; // sets the sprite to the right direction arrow
 	}
 }
 

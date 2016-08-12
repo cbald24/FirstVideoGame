@@ -34,14 +34,12 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 	frameHeight = positionRect.h =  cropRect.h; //sets the frameheight and postion rect's heights based on the crop rects height
 	positionRect.w = cropRect.w;
 	positionRect.h = cropRect.h;
-	left = false;
-	isActive = false;
-	onCooldown = false;
+	left = onCooldown = isActive = isJumping = isFalling = false;
 	keys[0] = SDL_SCANCODE_Q; //sets first key of the array to a 'w key pressed' code
 	keys[1] = SDL_SCANCODE_SPACE; //sets second key of the array to a 'w key pressed' code
 	keys[2] = SDL_SCANCODE_A;//sets third key of the array to a 'w key pressed' code
 	keys[3] = SDL_SCANCODE_D;//sets fourth key of the array to a 'w key pressed' code
-
+	yVelocity = 0.0f;
 	moveSpeed = 200.0f;
 }
 /*
@@ -56,7 +54,7 @@ Player::~Player()
 (param) const Uint8 *keyState: the current state of the keyboards button presses
 This method will update the player's current postion and the next frame in his animation
 */
-void Player::Update(float delta, const Uint8 *keyState, Map m, SDL_Renderer *renderTarget)
+void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *renderTarget)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
 	if (onCooldown)
@@ -76,7 +74,8 @@ void Player::Update(float delta, const Uint8 *keyState, Map m, SDL_Renderer *ren
 			fistOfFury->Update(positionRect.x, positionRect.y - 12, left);
 		}
 	}
-	int index = ((positionRect.y / m.getTileSize()) * m.getMapWidth()) + (positionRect.x / m.getTileSize());
+	
+	int index = ((positionRect.y / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
 	if (keyState[keys[0]])
 	{
 		if (!onCooldown)
@@ -97,29 +96,81 @@ void Player::Update(float delta, const Uint8 *keyState, Map m, SDL_Renderer *ren
 	}
 	else if (keyState[keys[1]])
 	{
-		positionRect.y -= moveSpeed * delta;
+		if (!isJumping)
+		{
+			isJumping = true;
+			yVelocity = -250.0f;
+		}
+		
 	}
 	else if (keyState[keys[2]]) //if the key being pushed is a
-	{		
-		positionRect.x -= (moveSpeed * delta);
-		cropRect.y = frameHeight * 2;	
+	{	
+		if (isFalling)
+		{
+			cropRect.y = 0;
+
+		}
+		else
+		{
+			cropRect.y = frameHeight * 2;
+		}
+		positionRect.x -= (moveSpeed * delta);			
 		left = true;
-		//if (tiles[index].getSolid())
-		//{
-		//	positionRect.x += moveSpeed * delta;
-		//}
+		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+		if (m->getTiles()[index].getSolid())
+		{
+			positionRect.x = (m->getTiles()[index].positionRect.x + 96);
+		}
 	}
 	else if (keyState[keys[3]]) //if the key being pushed is d
 	{
-		positionRect.x += (moveSpeed * delta);
-		cropRect.y = frameHeight * 3;
+		if (isFalling)
+		{
+			cropRect.y = frameHeight;
+
+		}
+		else
+		{
+			cropRect.y = frameHeight * 3;
+		}
+		positionRect.x += (moveSpeed * delta) + 1;		
 		left = false;
+		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+		if (m->getTiles()[index].getSolid())
+		{
+			positionRect.x = (m->getTiles()[index].positionRect.x);
+		}
 	}	
 	else //if none of the correct keys are being pushed
 	{
 		isActive = false; //set the players is active bool to false
+		if (isFalling)
+		{
+			if (left)
+			{
+				cropRect.y = 0;
+				
+			}
+			else
+			{
+				cropRect.y = frameHeight;
+				
+			}
+		}
 	}
-
+	
+	if (isJumping)
+	{
+		positionRect.y += (yVelocity * delta);
+		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+		if (m->getTiles()[index].getSolid())
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+		}
+	}
+	
+	updateGravity(delta, m);
+	
 	updateFrame(isActive, delta);
 
 }
@@ -228,23 +279,64 @@ description: this method will handle the updating the player frame and helps dec
 */
 void Player::updateFrame(bool a, float d)
 {
-	if (a) //if the player is active
+	if (isFalling)
 	{
-		frameCounter += 2 * d; //update the frame counter
-
-		if (frameCounter >= 0.25f) //if the frame counter is more then
+		if (cropRect.x != (frameWidth * 5))
 		{
-			frameCounter = 0; //set frame counter to 0
-			cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
-			if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
+			frameCounter += 4 * d; //update the frame counter
+
+			if (frameCounter >= 0.25f) //if the frame counter is more then
 			{
-				cropRect.x = 0; //reset back to first frame
+				frameCounter = 0; //set frame counter to 0
+				cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
+				
 			}
 		}
 	}
-	else //if inactive
+	else
 	{
-		frameCounter = 0; //set current player frame to 0 
-		cropRect.x = 0; //set idle postion for sprite sheet
+		if (a) //if the player is active
+		{
+			frameCounter += 2 * d; //update the frame counter
+
+			if (frameCounter >= 0.25f) //if the frame counter is more then
+			{
+				frameCounter = 0; //set frame counter to 0
+				cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
+				if (cropRect.x >= textureWidth) //if at the end of the sprite sheet
+				{
+					cropRect.x = 0; //reset back to first frame
+				}
+			}
+		}
+		else //if inactive
+		{
+			frameCounter = 0; //set current player frame to 0 
+			cropRect.x = 0; //set idle postion for sprite sheet
+		}
+	}
+}
+
+void Player::updateGravity(float d, Map *m)
+{
+	int index = (((positionRect.y+50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (!m->getTiles()[index].getSolid())
+	{
+		yVelocity += gravity;
+		positionRect.y += yVelocity * d;
+		if (yVelocity > 0)
+		{
+			if (!isFalling)
+			{
+				cropRect.x = 0;
+			}
+			isFalling = true;
+		}
+	}
+	else
+	{		
+		yVelocity = 0;
+		isFalling = false;
+		isJumping = false;
 	}
 }

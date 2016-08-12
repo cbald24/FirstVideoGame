@@ -8,7 +8,7 @@ public:
 	int getMapHeight();
 	int getMapWidth();
 	int getTileSize();
-	Tile getTiles();
+	Tile* getTiles();
 	void setMapHeight(int mh);
 	void setMapWidth(int mw);
 	void setTileSize(int ts);

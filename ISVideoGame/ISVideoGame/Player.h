@@ -14,7 +14,7 @@ public:
 	Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, int framesX, int framesY);
 	~Player();
 
-	void Update(float delta, const Uint8 *keyState, Map m, SDL_Renderer *renderTarget);
+	void Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *renderTarget);
 	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
 	bool IntersectsWith(WeakGuy &enemy);
 	int getPosX();
@@ -38,5 +38,9 @@ private:
 	Fire *fistOfFury; 	
 	const float cd = 3.0f;
 	float timer;
+	void updateGravity(float d, Map *m);
+	float yVelocity;
+	const float gravity = 9.8f;
+	bool isJumping, isFalling;
 };
 

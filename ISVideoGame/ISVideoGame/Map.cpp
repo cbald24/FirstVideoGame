@@ -41,9 +41,9 @@ int Map::getTileSize()
 /*
 this method will return the maps tiles variable to be used by other functions
 */
-Tile Map::getTiles()
+Tile* Map::getTiles()
 {
-	return tiles[0];
+	return tiles;
 }
 /*
 param (int mh): this int represents the map height

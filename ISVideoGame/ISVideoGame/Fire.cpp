@@ -37,11 +37,11 @@ void Fire::Update(int x, int y, bool l)
 	posRect.y = y;
 	if (l)
 	{
-		cropRect.x = 0;
+		cropRect.x = 33;
 	}
 	else
 	{
-		cropRect.x = 33;
+		cropRect.x = 0;
 	}
 }
 
