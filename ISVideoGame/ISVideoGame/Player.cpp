@@ -17,10 +17,8 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 		SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 250, 50, 250)); //sets this certain pink color to transparent
 		texture = SDL_CreateTextureFromSurface(renderTarget, surface);		//create a texture for the renderer out of the surface
 	}
-
 	SDL_FreeSurface(surface); //free the SDL surface from the memory
-
-	SDL_QueryTexture(texture, NULL, NULL, &cropRect.w, &cropRect.h); //
+	SDL_QueryTexture(texture, NULL, NULL, &cropRect.w, &cropRect.h); //helps set the texture parameters to the crop rect values
 
 	positionRect.x = x; //sets the player charecter's x postion on the world map
 	positionRect.y = y; //sets the player's y postion on the world map
@@ -67,7 +65,7 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	}
 	else if (keyState[keys[1]])
 	{
-				
+		jump();
 	}
 	else if (keyState[keys[2]]) //if the key being pushed is a to walk left
 	{	
@@ -95,7 +93,7 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	int index2;
 	if (isJumping)
 	{
-		jump(m, delta);
+		midAirUpdate(m, delta);
 	}	
 	updateGravity(delta, m);
 	updateFrame(isActive, delta);
@@ -129,7 +127,11 @@ int Player::getPosY()
 {
 	return positionRect.y; //returns the players y location in the world
 }
-
+/*
+param (WeakGuy &enemy): a monster that runs at you and will be used to check if the player and it are touching
+return (bool): returns a bool stating true if the player and monster are touching and false if not
+description: this method will check and see if the player is touching a weak monster and then change the players health if not it won't do anything
+*/
 bool Player::IntersectsWith(WeakGuy &enemy)
 {
 	if (checkCollision(enemy.positionRect))
@@ -143,7 +145,6 @@ bool Player::IntersectsWith(WeakGuy &enemy)
 		return true;
 	}
 }
-
 /*
 Param (SDL_Rect a): the first rect to use for collision detection
 Param (SDL_Rect b): the second rect to use for collision detection
@@ -159,46 +160,6 @@ bool Player::checkCollision(SDL_Rect a)
 		return true;
 	}
 	return false;
-}
-
-bool Player::checkMapCollision(SDL_Rect a)
-{
-	int leftA, leftB;
-	int rightA, rightB;
-	int topA, topB;
-	int bottomA, bottomB;
-
-	//Calculate the sides of rect A
-	leftA = a.x;
-	rightA = a.x + a.w;
-	topA = a.y;
-	bottomA = a.y + a.h;
-
-	//Calculate the sides of rect B
-	leftB = positionRect.x;
-	rightB = positionRect.x + positionRect.w;
-	topB = positionRect.y;
-	bottomB = positionRect.y + positionRect.h;
-
-	//If any of the sides from A are outside of B
-	if (bottomA < topB)
-	{
-		return false;
-	}
-	if (topA > bottomB)
-	{
-		return false;
-	}
-	if (rightA < leftB)
-	{
-		return false;
-	}
-	if (leftA > rightB)
-	{
-		return false;
-	}
-	//If none of the sides from A are outside B
-	return true;
 }
 /*
 Param (float d):this will be the delta value that was given to the update method
@@ -243,7 +204,11 @@ void Player::updateFrame(bool a, float d)
 		}
 	}
 }
-
+/*
+param (float d): the delta float that is passed to the player update method
+param (Map *m): a pointer to the map that was passed to the player update method
+description: the method will handle the effect of gravity on the player by updating yVelocity, and making sure the player doesn't fall through the ground
+*/
 void Player::updateGravity(float d, Map *m)
 {
 	int index = (((positionRect.y+50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
@@ -260,16 +225,8 @@ void Player::updateGravity(float d, Map *m)
 			}
 			isFalling = true;
 		}
-		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-		}
-		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-		if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-		}
+		fixBottomRight(m);
+		fixBottomLeft(m);	
 	}
 	else
 	{		
@@ -278,32 +235,18 @@ void Player::updateGravity(float d, Map *m)
 		isJumping = false;
 	}
 }
-
+/*
+param (float d): the delta float that is passed to the player update method
+param (Map *m): a pointer to the map that was passed to the player update method
+description: will check each corner of the players postion box and make sure they don't go through terrain
+*/
 void Player::midAirUpdate(Map *m, float d)
 {
 	positionRect.y += (yVelocity * d);
-	int index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
-	{
-		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-	}
-	index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
-	{
-		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-	}
-	index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-	if (m->getTiles()[index].getSolid()) //check top left corner checking for head bump
-	{
-		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
-		yVelocity = 0;
-	}
-	index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-	if (m->getTiles()[index].getSolid()) //check top right corner checking for head bump
-	{
-		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
-		yVelocity = 0;
-	}
+	fixBottomLeft(m); 
+	fixBottomRight(m);
+	fixTopLeft(m);
+	fixTopRight(m);	
 }
 
 void Player::moveLeft(Map *m, float d)
@@ -397,5 +340,43 @@ void Player::jump()
 	{
 		isJumping = true;
 		yVelocity = -350.0f;
+	}
+}
+
+void Player::fixTopLeft(Map *m)
+{
+	int index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check top left corner checking for head bump
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+		yVelocity = 0;
+	}
+}
+
+void Player::fixTopRight(Map *m)
+{
+	int index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check top right corner checking for head bump
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+		yVelocity = 0;
+	}
+}
+
+void Player::fixBottomRight(Map *m)
+{
+	int index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+	}
+}
+
+void Player::fixBottomLeft(Map *m)
+{
+	int index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
 	}
 }

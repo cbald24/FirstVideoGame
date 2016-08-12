@@ -31,7 +31,6 @@ private:
 	SDL_Scancode keys[4];
 	int health;
 	bool checkCollision(SDL_Rect a);
-	bool checkMapCollision(SDL_Rect a);
 	void updateFrame(bool a, float d);
 	Fire *fistOfFury; 	
 	const float cd = 3.0f;
@@ -46,5 +45,9 @@ private:
 	void fireFists(Map *m, float d, SDL_Renderer *renderTarget);
 	void cooldownUpdate(float d);
 	void midAirUpdate(Map *m, float d);
+	void fixTopLeft(Map *m);
+	void fixTopRight(Map *m);
+	void fixBottomRight(Map *m);
+	void fixBottomLeft(Map *m);
 };
 
