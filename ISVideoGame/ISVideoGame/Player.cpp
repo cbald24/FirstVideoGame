@@ -117,6 +117,11 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 		positionRect.x -= (moveSpeed * delta);			
 		left = true;
 		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+		if(m->getTiles()[index].getSolid())
+		{
+			positionRect.x = (m->getTiles()[index].positionRect.x + 96);
+		}
+		index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
 		if (m->getTiles()[index].getSolid())
 		{
 			positionRect.x = (m->getTiles()[index].positionRect.x + 96);
@@ -136,9 +141,14 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 		positionRect.x += (moveSpeed * delta) + 1;		
 		left = false;
 		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+		if(m->getTiles()[index].getSolid())
+		{
+			positionRect.x = (m->getTiles()[index].positionRect.x - 34);
+		}
+		index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
 		if (m->getTiles()[index].getSolid())
 		{
-			positionRect.x = (m->getTiles()[index].positionRect.x);
+			positionRect.x = (m->getTiles()[index].positionRect.x - 34);
 		}
 	}	
 	else //if none of the correct keys are being pushed
@@ -158,15 +168,33 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 			}
 		}
 	}
-	
+	int index2;
 	if (isJumping)
 	{
 		positionRect.y += (yVelocity * delta);
 		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if (m->getTiles()[index].getSolid())
+		if(m->getTiles()[index].getSolid()) //check bottom left corner
 		{
 			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
 		}
+		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+		if (m->getTiles()[index].getSolid()) //check bottom left corner
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+		}
+		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+		if(m->getTiles()[index].getSolid()) //check top left corner
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+			yVelocity = 0;
+		}
+		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+		if(m->getTiles()[index].getSolid()) //check top right corner
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+			yVelocity = 0;
+		}
+		
 	}
 	
 	updateGravity(delta, m);
