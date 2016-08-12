@@ -168,21 +168,11 @@ int main(int argc, char* args[])
 			SDL_GameControllerUpdate();
 			if (ev.type == SDL_QUIT) //if the event is to quit then
 				isRunning = false; //set isRunning to false to exit loop and close game
-			else if (ev.type == SDL_CONTROLLERBUTTONDOWN)
-			{
-				
-			}
-			else
-			{
-				player1.handleInput(delta, nullptr, &daMap, renderTarget);
-			}			
+	
 		}
 		keystate = SDL_GetKeyboardState(NULL);
-		player1.handleInput(delta, keystate, &daMap, renderTarget);
-		 //this passes the delta and updates the players sprite and postion
-		
 		archer.Update(delta, player1, renderTarget);
-		player1.Update(delta, ev, &daMap, renderTarget);
+		player1.Update(delta, keystate, &daMap, renderTarget);
 		player1.IntersectsWith(enemy1);
 
 		cameraRect.x = player1.getPosX() - 375; //sets the camera postion on the players x

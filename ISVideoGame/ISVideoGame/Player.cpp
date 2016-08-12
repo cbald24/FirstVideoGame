@@ -67,7 +67,7 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	}
 	else if (keyState[keys[1]])
 	{
-				
+		jump();
 	}
 	else if (keyState[keys[2]]) //if the key being pushed is a to walk left
 	{	
@@ -95,7 +95,7 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	int index2;
 	if (isJumping)
 	{
-		jump(m, delta);
+		midAirUpdate(m, delta);
 	}	
 	updateGravity(delta, m);
 	updateFrame(isActive, delta);
