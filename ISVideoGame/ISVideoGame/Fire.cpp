@@ -16,13 +16,11 @@ Fire::Fire(SDL_Renderer *renderTarget, std::string filepath, int x, int y)
 	}
 	SDL_FreeSurface(surface); //free the SDL surface from the memory
 	SDL_QueryTexture(texture, NULL, NULL, &cropRect.w, &cropRect.h);
-
 	posRect.x = x;
 	posRect.y = y;
-
 	cropRect.w /= 2;
-	posRect.h = cropRect.h;
-	posRect.w = cropRect.w;
+	frameHeight = posRect.h = cropRect.h;
+	frameWidth = posRect.w = cropRect.w;
 }
 
 
@@ -33,15 +31,16 @@ Fire::~Fire()
 
 void Fire::Update(int x, int y, bool l)
 {
-	posRect.x = x;
 	posRect.y = y;
 	if (l)
 	{
-		cropRect.x = 33;
+		cropRect.x = frameWidth;
+		posRect.x = x - frameWidth + 10;
 	}
 	else
 	{
 		cropRect.x = 0;
+		posRect.x = x + playerWidth - 10;
 	}
 }
 

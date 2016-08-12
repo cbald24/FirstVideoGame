@@ -25,8 +25,6 @@ public:
 private:
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
-	float moveSpeed;
-	float frameCounter;
 	int frameWidth, frameHeight;
 	int textureWidth;
 	bool isActive, onCooldown, left;
@@ -37,10 +35,16 @@ private:
 	void updateFrame(bool a, float d);
 	Fire *fistOfFury; 	
 	const float cd = 3.0f;
-	float timer;
 	void updateGravity(float d, Map *m);
-	float yVelocity;
+	float yVelocity, xVelocity, frameCounter, timer;
 	const float gravity = 9.8f;
+	const float moveSpeed = 200.0f;
 	bool isJumping, isFalling;
+	void jump();
+	void moveLeft(Map *m, float d);
+	void moveRight(Map *m, float d);
+	void fireFists(Map *m, float d, SDL_Renderer *renderTarget);
+	void cooldownUpdate(float d);
+	void midAirUpdate(Map *m, float d);
 };
 

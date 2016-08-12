@@ -40,7 +40,6 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 	keys[2] = SDL_SCANCODE_A;//sets third key of the array to a 'w key pressed' code
 	keys[3] = SDL_SCANCODE_D;//sets fourth key of the array to a 'w key pressed' code
 	yVelocity = 0.0f;
-	moveSpeed = 200.0f;
 }
 /*
 the deconstructor for the player object
@@ -59,97 +58,24 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	isActive = true; //sets the bool for iff the player is actively moving to true
 	if (onCooldown)
 	{
-		timer -= delta;
-		if (timer <= 0)
-		{
-			onCooldown = false;
-		}
-		else if (timer <= 1)
-		{
-			fistOfFury = nullptr;
-		}
-		else
-		{
-			timer -= delta;
-			fistOfFury->Update(positionRect.x, positionRect.y - 12, left);
-		}
+		cooldownUpdate(delta);
 	}
-	
 	int index = ((positionRect.y / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
 	if (keyState[keys[0]])
 	{
-		if (!onCooldown)
-		{
-			if (left)
-			{
-				fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x, positionRect.y - 12);
-				onCooldown = true;
-				timer = cd;
-			}
-			else
-			{
-				fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x + 34, positionRect.y - 12);
-				onCooldown = true;
-				timer = cd;
-			}
-		}
+		fireFists(m, delta, renderTarget);
 	}
 	else if (keyState[keys[1]])
 	{
-		if (!isJumping)
-		{
-			isJumping = true;
-			yVelocity = -250.0f;
-		}
-		
+				
 	}
-	else if (keyState[keys[2]]) //if the key being pushed is a
+	else if (keyState[keys[2]]) //if the key being pushed is a to walk left
 	{	
-		if (isFalling)
-		{
-			cropRect.y = 0;
-
-		}
-		else
-		{
-			cropRect.y = frameHeight * 2;
-		}
-		positionRect.x -= (moveSpeed * delta);			
-		left = true;
-		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if(m->getTiles()[index].getSolid())
-		{
-			positionRect.x = (m->getTiles()[index].positionRect.x + 96);
-		}
-		index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if (m->getTiles()[index].getSolid())
-		{
-			positionRect.x = (m->getTiles()[index].positionRect.x + 96);
-		}
+		moveLeft(m, delta);
 	}
-	else if (keyState[keys[3]]) //if the key being pushed is d
-	{
-		if (isFalling)
-		{
-			cropRect.y = frameHeight;
-
-		}
-		else
-		{
-			cropRect.y = frameHeight * 3;
-		}
-		positionRect.x += (moveSpeed * delta) + 1;		
-		left = false;
-		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-		if(m->getTiles()[index].getSolid())
-		{
-			positionRect.x = (m->getTiles()[index].positionRect.x - 34);
-		}
-		index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-		if (m->getTiles()[index].getSolid())
-		{
-			positionRect.x = (m->getTiles()[index].positionRect.x - 34);
-		}
+	else if (keyState[keys[3]]) //if the key being pushed is d to walk right
+	{		
+		moveRight(m, delta);
 	}	
 	else //if none of the correct keys are being pushed
 	{
@@ -158,47 +84,20 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 		{
 			if (left)
 			{
-				cropRect.y = 0;
-				
+				cropRect.y = 0;			
 			}
 			else
 			{
-				cropRect.y = frameHeight;
-				
+				cropRect.y = frameHeight;			
 			}
 		}
 	}
 	int index2;
 	if (isJumping)
 	{
-		positionRect.y += (yVelocity * delta);
-		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if(m->getTiles()[index].getSolid()) //check bottom left corner
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-		}
-		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-		if (m->getTiles()[index].getSolid()) //check bottom left corner
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
-		}
-		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-		if(m->getTiles()[index].getSolid()) //check top left corner
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y + 96);
-			yVelocity = 0;
-		}
-		index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
-		if(m->getTiles()[index].getSolid()) //check top right corner
-		{
-			positionRect.y = (m->getTiles()[index].positionRect.y + 96);
-			yVelocity = 0;
-		}
-		
-	}
-	
+		jump(m, delta);
+	}	
 	updateGravity(delta, m);
-	
 	updateFrame(isActive, delta);
 
 }
@@ -348,7 +247,8 @@ void Player::updateFrame(bool a, float d)
 void Player::updateGravity(float d, Map *m)
 {
 	int index = (((positionRect.y+50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-	if (!m->getTiles()[index].getSolid())
+	int index2 = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 33) / m->getTileSize());
+	if (!m->getTiles()[index].getSolid() && !m->getTiles()[index2].getSolid())
 	{
 		yVelocity += gravity;
 		positionRect.y += yVelocity * d;
@@ -360,11 +260,142 @@ void Player::updateGravity(float d, Map *m)
 			}
 			isFalling = true;
 		}
+		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+		if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+		}
+		index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+		if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+		{
+			positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+		}
 	}
 	else
 	{		
 		yVelocity = 0;
 		isFalling = false;
 		isJumping = false;
+	}
+}
+
+void Player::midAirUpdate(Map *m, float d)
+{
+	positionRect.y += (yVelocity * d);
+	int index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+	}
+	index = (((positionRect.y + 50) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check bottom left corner checking for fall
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y - 50);
+	}
+	index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check top left corner checking for head bump
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+		yVelocity = 0;
+	}
+	index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid()) //check top right corner checking for head bump
+	{
+		positionRect.y = (m->getTiles()[index].positionRect.y + 96);
+		yVelocity = 0;
+	}
+}
+
+void Player::moveLeft(Map *m, float d)
+{
+	if (isFalling)
+	{
+		cropRect.y = 0;
+	}
+	else
+	{
+		cropRect.y = frameHeight * 2;
+	}
+	positionRect.x -= (moveSpeed * d);
+	left = true;
+	int index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid())
+	{
+		positionRect.x = (m->getTiles()[index].positionRect.x + 96);
+	}
+	index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
+	if (m->getTiles()[index].getSolid())
+	{
+		positionRect.x = (m->getTiles()[index].positionRect.x + 96);
+	}
+}
+
+void Player::moveRight(Map *m, float d)
+{
+	if (isFalling)
+	{
+		cropRect.y = frameHeight;
+	}
+	else
+	{
+		cropRect.y = frameHeight * 3;
+	}
+	positionRect.x += (moveSpeed * d);
+	left = false;
+	int index = (((positionRect.y) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid())
+	{
+		positionRect.x = (m->getTiles()[index].positionRect.x - 35);
+	}
+	index = (((positionRect.y + 49) / m->getTileSize()) * m->getMapWidth()) + ((positionRect.x + 34) / m->getTileSize());
+	if (m->getTiles()[index].getSolid())
+	{
+		positionRect.x = (m->getTiles()[index].positionRect.x - 35);
+	}
+}
+
+void Player::fireFists(Map *m, float d, SDL_Renderer *renderTarget)
+{
+	if (!onCooldown)
+	{
+		if (left)
+		{
+			fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x, positionRect.y + 12);
+			onCooldown = true;
+			timer = cd;
+		}
+		else
+		{
+			fistOfFury = new Fire(renderTarget, "fire.png", positionRect.x + 34, positionRect.y + 12);
+			onCooldown = true;
+			timer = cd;
+		}
+	}
+}
+
+void Player::cooldownUpdate(float d)
+{
+	timer -= d;
+	if (timer <= 0)
+	{
+		onCooldown = false;
+	}
+	else if (timer <= 1)
+	{
+		fistOfFury = nullptr;
+	}
+	else
+	{
+		timer -= d;
+		fistOfFury->Update(positionRect.x, positionRect.y + 12, left);
+	}
+}
+
+void Player::jump()
+{
+	if (!isJumping)
+	{
+		isJumping = true;
+		yVelocity = -350.0f;
 	}
 }

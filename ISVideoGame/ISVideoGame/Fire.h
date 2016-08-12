@@ -17,5 +17,6 @@ private:
 	SDL_Rect posRect;
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
+	const int playerWidth = 34;
 };
 
