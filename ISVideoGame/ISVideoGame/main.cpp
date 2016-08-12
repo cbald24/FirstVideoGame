@@ -105,7 +105,10 @@ SDL_Texture *LoadTexture(std::string filepath, SDL_Renderer *renderTarget)
 	return texture;
 }
 
-
+void InitSDL()
+{
+	
+}
 
 int main(int argc, char* args[])
 {
@@ -116,25 +119,36 @@ int main(int argc, char* args[])
 	int currentTime = 0;//time to help frames and buffering
 	int prevTime = 0;//helps create the delta
 	float delta = 0.0f;
-	const Uint8 *keyState; //the keystate of the keyboard
+	const Uint8 *keystate; //the keystate of the keyboard
 	SDL_Event ev; //an event that currently is used to exit
 	const int screenHeight = 400; //the window height in pixels
 	const int screenWidth = 750; //the window width in pixels
 	SDL_Rect cameraRect = { 0, 0, screenWidth, screenHeight }; //the SDL rect that wil be the camera set to the same dimensions as the game window
 	int levelWidth; //the default width of the level
 	int levelHeight; //the default height of the level
+	Tile* mapTiles = nullptr;
 	
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER); //inits the video and controller functions to operate the game
-
+	
 	int imgflags = IMG_INIT_PNG; //inits the abality to read and use .png files
 	if (IMG_Init(imgflags) != imgflags) //check for error
 	{
 		std::cout << "Error" << IMG_GetError() << std::endl; //error message
 	}
+	
+	for (int i = 0; i < SDL_NumJoysticks(); i++)
+	{
+		if (SDL_IsGameController(i))
+		{
+			controller = SDL_GameControllerOpen(i);
+			SDL_GameControllerEventState(1);
+			break;
+		}
+	}
 
 	window = SDL_CreateWindow("Independent Study: THE GAME", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_SHOWN); //creates the game window, gives it a title and makes it display
 	renderTarget = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //creates the renderer and sets its target to the game window
-
+	
 	Map daMap = ReadMap("backgroundTest.tmx", renderTarget);
 	levelHeight = daMap.getMapHeight() * daMap.getTileSize();
 	levelWidth = daMap.getMapWidth() * daMap.getTileSize();
@@ -142,24 +156,33 @@ int main(int argc, char* args[])
 	Player player1 = Player(renderTarget, "playerSprites.png", 0, levelHeight-338, 9, 5); //creates the player object using preset values detrimened by the sprite sheet dimensions for images
 	WeakGuy enemy1 = WeakGuy(renderTarget, "weakBadGuy.png", 500, levelHeight-338, 9, 3);
 	RangedEnemy archer = RangedEnemy(renderTarget, "rangedBadGuy.png", 1000, levelHeight - 343, 13, 3);
-
 	bool isRunning = true; //set bool to true to make loop go infinetly till game needs exited
 	while (isRunning) //loop that manages the game actions
 	{
 		prevTime = currentTime; //sets previous time to the current time
 		currentTime = SDL_GetTicks(); //gets the current run time
 		delta = (currentTime - prevTime) / 1000.0f; //calculates the delta 
+
 		while (SDL_PollEvent(&ev) != 0) // checks to se if an sdl event happened
 		{
+			SDL_GameControllerUpdate();
 			if (ev.type == SDL_QUIT) //if the event is to quit then
 				isRunning = false; //set isRunning to false to exit loop and close game
+			else if (ev.type == SDL_CONTROLLERBUTTONDOWN)
+			{
+				
+			}
+			else
+			{
+				player1.handleInput(delta, nullptr, &daMap, renderTarget);
+			}			
 		}
+		keystate = SDL_GetKeyboardState(NULL);
+		player1.handleInput(delta, keystate, &daMap, renderTarget);
+		 //this passes the delta and updates the players sprite and postion
 		
-		keyState = SDL_GetKeyboardState(NULL);//this will find which keys are being pressed
-		player1.Update(delta, keyState, &daMap, renderTarget); //this passes the delta and updates the players sprite and postion
-		enemy1.Update(delta, keyState);
 		archer.Update(delta, player1, renderTarget);
-
+		player1.Update(delta, ev, &daMap, renderTarget);
 		player1.IntersectsWith(enemy1);
 
 		cameraRect.x = player1.getPosX() - 375; //sets the camera postion on the players x

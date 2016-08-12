@@ -14,12 +14,12 @@ public:
 	Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, int framesX, int framesY);
 	~Player();
 
-	void Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *renderTarget);
+	void Update(float delta, SDL_Event ev, Map *m, SDL_Renderer *renderTarget);
 	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
+	void handleInput(float delta, const Uint8 *keystate, Map *m, SDL_Renderer *renderTarget);
 	bool IntersectsWith(WeakGuy &enemy);
 	int getPosX();
 	int getPosY();
-
 	SDL_Rect positionRect;
 
 private:
@@ -31,7 +31,7 @@ private:
 	SDL_Scancode keys[4];
 	int health;
 	bool checkCollision(SDL_Rect a);
-	void updateFrame(bool a, float d);
+	void updateFrame(float d);
 	Fire *fistOfFury; 	
 	const float cd = 3.0f;
 	void updateGravity(float d, Map *m);
@@ -49,5 +49,14 @@ private:
 	void fixTopRight(Map *m);
 	void fixBottomRight(Map *m);
 	void fixBottomLeft(Map *m);
+	enum State
+	{
+		STATE_JUMPING,
+		STATE_FALLING,
+		STATE_ATTACKING,
+		STATE_WALKING,
+		STATE_STANDING
+	};
+	State playerState;
 };
 

@@ -33,11 +33,11 @@ Player::Player(SDL_Renderer *renderTarget, std::string filepath, int x, int y, i
 	positionRect.w = cropRect.w;
 	positionRect.h = cropRect.h;
 	left = onCooldown = isActive = isJumping = isFalling = false;
-	keys[0] = SDL_SCANCODE_Q; //sets first key of the array to a 'w key pressed' code
-	keys[1] = SDL_SCANCODE_SPACE; //sets second key of the array to a 'w key pressed' code
-	keys[2] = SDL_SCANCODE_A;//sets third key of the array to a 'w key pressed' code
-	keys[3] = SDL_SCANCODE_D;//sets fourth key of the array to a 'w key pressed' code
 	yVelocity = 0.0f;
+	keys[0] = SDL_SCANCODE_A;
+	keys[1] = SDL_SCANCODE_D;
+	keys[2] = SDL_SCANCODE_SPACE;
+	keys[3] = SDL_SCANCODE_LALT;
 }
 /*
 the deconstructor for the player object
@@ -51,54 +51,136 @@ Player::~Player()
 (param) const Uint8 *keyState: the current state of the keyboards button presses
 This method will update the player's current postion and the next frame in his animation
 */
-void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *renderTarget)
+void Player::Update(float delta, SDL_Event ev, Map *m, SDL_Renderer *renderTarget)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
 	if (onCooldown)
 	{
 		cooldownUpdate(delta);
 	}
-	int index = ((positionRect.y / m->getTileSize()) * m->getMapWidth()) + (positionRect.x / m->getTileSize());
-	if (keyState[keys[0]])
+
+	if (playerState == STATE_FALLING)
 	{
-		fireFists(m, delta, renderTarget);
-	}
-	else if (keyState[keys[1]])
-	{
-		jump();
-	}
-	else if (keyState[keys[2]]) //if the key being pushed is a to walk left
-	{	
-		moveLeft(m, delta);
-	}
-	else if (keyState[keys[3]]) //if the key being pushed is d to walk right
-	{		
-		moveRight(m, delta);
-	}	
-	else //if none of the correct keys are being pushed
-	{
-		isActive = false; //set the players is active bool to false
-		if (isFalling)
+		if (left)
 		{
-			if (left)
-			{
-				cropRect.y = 0;			
-			}
-			else
-			{
-				cropRect.y = frameHeight;			
-			}
+			cropRect.y = 0;
+		}
+		else
+		{
+			cropRect.y = frameHeight;
 		}
 	}
-	int index2;
-	if (isJumping)
-	{
-		midAirUpdate(m, delta);
-	}	
 	updateGravity(delta, m);
-	updateFrame(isActive, delta);
-
+	updateFrame(delta);
 }
+
+void Player::handleInput(float delta, const Uint8 *keystate, Map *m, SDL_Renderer *renderTarget)
+{
+	switch (playerState)
+	{
+	case STATE_STANDING:
+		if (keystate[keys[0]])
+		{
+			playerState = STATE_WALKING;
+			moveLeft(m, delta);
+			//updateFrame(delta);
+		}
+		else if (keystate[keys[1]])
+		{
+			playerState = STATE_WALKING;
+			moveRight(m, delta);
+			//updateFrame(delta);
+		}
+		else if (keystate[keys[2]])
+		{
+			jump();
+		}
+		else if (keystate[keys[3]])
+		{
+			playerState = STATE_ATTACKING;
+			fireFists(m, delta, renderTarget);
+			onCooldown = true;
+		}
+		else
+		{
+			//updateFrame(delta);
+		}
+		//updateGravity(delta, m);
+		break;
+	case STATE_WALKING:
+		if (keystate[keys[0]])
+		{
+			playerState = STATE_WALKING;
+			moveLeft(m, delta);
+			//updateFrame(delta);
+		}
+		else if (keystate[keys[1]])
+		{
+			playerState = STATE_WALKING;
+			moveRight(m, delta);
+			//updateFrame(delta);
+		}
+		else if (keystate[keys[2]])
+		{
+			jump();
+		}
+		else if (keystate[keys[3]])
+		{
+			playerState = STATE_ATTACKING;
+			fireFists(m, delta, renderTarget);
+			onCooldown = true;
+		}
+		else
+		{
+			playerState = STATE_STANDING;
+			//updateFrame;
+		}
+		//updateGravity(delta, m);
+		break;
+	case STATE_JUMPING || STATE_FALLING:
+		if (keystate[keys[0]])
+		{
+			moveLeft(m, delta);
+			midAirUpdate(m, delta);
+			//updateFrame(delta);
+
+		}
+		else if (keystate[keys[1]])
+		{
+			moveRight(m, delta);
+			midAirUpdate(m, delta);
+			//updateFrame(delta);
+		}
+		else
+		{
+			updateFrame(delta);
+		}
+		//updateGravity(delta, m);
+		break;
+	case STATE_ATTACKING:
+		if (keystate[keys[0]])
+		{
+			moveLeft(m, delta);
+			updateFrame(delta);
+		}
+		else if (keystate[keys[1]])
+		{
+			moveRight(m, delta);
+			updateFrame(delta);
+		}
+		else
+		{
+			updateFrame(delta);
+		}
+		//updateGravity(delta, m);
+		break;
+	default:
+		playerState = STATE_STANDING;
+		//updateGravity(delta, m);
+		//updateFrame(delta);		
+	}
+}
+
 /*
 (param) SDL_Renderer *renderTarget: a pointer to the render location
 (param) SDL_Rect cameraRect: the rectangle for the camera
@@ -108,7 +190,7 @@ void Player::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 {
 	SDL_Rect drawingRect = { positionRect.x - cameraRect.x, positionRect.y - cameraRect.y, positionRect.w, positionRect.h }; //sets the players drawing location based on the players postion and the camera
 	SDL_RenderCopy(renderTarget, texture, &cropRect, &drawingRect); // create a copy of the player texture to be rendered
-	if (onCooldown && fistOfFury != nullptr)
+	if (playerState == STATE_ATTACKING && fistOfFury != nullptr)
 	{
 		fistOfFury->Draw(renderTarget, cameraRect);
 	}
@@ -165,9 +247,9 @@ bool Player::checkCollision(SDL_Rect a)
 Param (float d):this will be the delta value that was given to the update method
 description: this method will handle the updating the player frame and helps declutter the update method
 */
-void Player::updateFrame(bool a, float d)
+void Player::updateFrame(float d)
 {
-	if (isFalling)
+	if (playerState == STATE_FALLING)
 	{
 		if (cropRect.x != (frameWidth * 5))
 		{
@@ -183,7 +265,7 @@ void Player::updateFrame(bool a, float d)
 	}
 	else
 	{
-		if (a) //if the player is active
+		if (playerState != STATE_STANDING) //if the player is active
 		{
 			frameCounter += 2 * d; //update the frame counter
 
@@ -219,11 +301,11 @@ void Player::updateGravity(float d, Map *m)
 		positionRect.y += yVelocity * d;
 		if (yVelocity > 0)
 		{
-			if (!isFalling)
+			if (playerState != STATE_FALLING)
 			{
 				cropRect.x = 0;
 			}
-			isFalling = true;
+			playerState = STATE_FALLING;
 		}
 		fixBottomRight(m);
 		fixBottomLeft(m);	
@@ -231,8 +313,7 @@ void Player::updateGravity(float d, Map *m)
 	else
 	{		
 		yVelocity = 0;
-		isFalling = false;
-		isJumping = false;
+		playerState = STATE_STANDING;
 	}
 }
 /*
@@ -321,11 +402,12 @@ void Player::cooldownUpdate(float d)
 	timer -= d;
 	if (timer <= 0)
 	{
-		onCooldown = false;
+		playerState = STATE_STANDING;
 	}
 	else if (timer <= 1)
 	{
 		fistOfFury = nullptr;
+		onCooldown = false;
 	}
 	else
 	{
@@ -336,9 +418,9 @@ void Player::cooldownUpdate(float d)
 
 void Player::jump()
 {
-	if (!isJumping)
+	if (playerState != STATE_JUMPING)
 	{
-		isJumping = true;
+		playerState = STATE_JUMPING;
 		yVelocity = -350.0f;
 	}
 }
