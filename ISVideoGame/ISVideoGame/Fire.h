@@ -12,9 +12,10 @@ public:
 	~Fire();
 	void Update(int x, int y, bool l);
 	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
+	SDL_Rect posRect;
 private:
 	int frameWidth, frameHeight;
-	SDL_Rect posRect;
+
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
 	const int playerWidth = 34;

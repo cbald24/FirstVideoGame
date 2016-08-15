@@ -123,6 +123,7 @@
     <ClCompile Include="Fire.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Monster.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RangedEnemy.cpp" />
     <ClCompile Include="Tile.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="Boss.h" />
     <ClInclude Include="Fire.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="Monster.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RangedEnemy.h" />
     <ClInclude Include="Tile.h" />

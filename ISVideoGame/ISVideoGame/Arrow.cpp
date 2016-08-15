@@ -32,7 +32,7 @@ Arrow::~Arrow()
 	SDL_DestroyTexture(texture);
 }
 
-void Arrow::Update(float delta, Player &p)
+void Arrow::Update(float delta)
 {
 	if (pointedLeft)
 	{

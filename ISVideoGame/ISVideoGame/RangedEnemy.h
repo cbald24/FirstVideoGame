@@ -7,6 +7,7 @@
 #include<cmath>
 #include"Player.h"
 #include"Arrow.h"
+#include"Fire.h"
 
 class RangedEnemy
 {
@@ -18,6 +19,8 @@ public:
 	int getPosX();
 	int getPosY();
 	SDL_Rect positionRect;
+	bool hitFire(Fire *f);
+	Arrow *myArrow;
 private:
 	float timer;
 	const float cooldown = 7.50f;
@@ -29,6 +32,7 @@ private:
 	bool onCooldown, draw, left;
 	SDL_Scancode keys[4];
 	int health;
-	Arrow *myArrow;
+	
+	bool checkCollision(SDL_Rect);
 };
 

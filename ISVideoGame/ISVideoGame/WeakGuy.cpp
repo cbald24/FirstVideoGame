@@ -1,5 +1,5 @@
 #include"WeakGuy.h"
-
+#include"Monster.h"
 
 WeakGuy::WeakGuy(SDL_Renderer *renderTarget, std::string filepath, int x, int y, int framesX, int framesY)
 {
@@ -109,4 +109,37 @@ int WeakGuy::getPosX()
 int WeakGuy::getPosY()
 {
 	return positionRect.y; //returns the players y location in the world
+}
+/*
+the
+*/
+bool WeakGuy::checkCollision(SDL_Rect a)
+{
+	if (positionRect.x + positionRect.w < a.x || positionRect.x > a.x + a.w
+		|| positionRect.y + positionRect.h < a.y || positionRect.y > a.y + a.h)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool WeakGuy::hitFire(Fire *f)
+{
+	if (f != nullptr)
+	{
+		if (checkCollision(f->posRect))
+		{
+			SDL_SetTextureColorMod(texture, 255, 255, 255);
+			return false;
+		}
+		else
+		{
+			SDL_SetTextureColorMod(texture, 250, 0, 0);
+			return true;
+		}
+	}
+	else
+	{
+		SDL_SetTextureColorMod(texture, 255, 255, 255);
+	}
 }

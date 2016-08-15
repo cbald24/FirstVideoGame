@@ -1,5 +1,5 @@
 #pragma once
-
+#include"Arrow.h"
 #include<SDL.h>
 #include<string>
 #include"WeakGuy.h"
@@ -19,24 +19,23 @@ public:
 	bool IntersectsWith(WeakGuy &enemy);
 	int getPosX();
 	int getPosY();
-
+	Fire *fistOfFury;
 	SDL_Rect positionRect;
-
+	bool arrowInteraction(Arrow *a);
 private:
 	SDL_Rect cropRect;
 	SDL_Texture *texture;
 	int frameWidth, frameHeight;
 	int textureWidth;
-	bool isActive, onCooldown, left;
+	bool isActive, onCooldown, left, hurt, kill;
 	SDL_Scancode keys[4];
 	int health;
 	bool checkCollision(SDL_Rect a);
 	bool checkMapCollision(SDL_Rect a);
-	void updateFrame(bool a, float d);
-	Fire *fistOfFury; 	
+	void updateFrame(bool a, float d);	
 	const float cd = 3.0f;
 	void updateGravity(float d, Map *m);
-	float yVelocity, xVelocity, frameCounter, timer;
+	float yVelocity, xVelocity, frameCounter, timer, iFrames;
 	const float gravity = 9.8f;
 	const float moveSpeed = 200.0f;
 	bool isJumping, isFalling;
@@ -46,5 +45,7 @@ private:
 	void fireFists(Map *m, float d, SDL_Renderer *renderTarget);
 	void cooldownUpdate(float d);
 	void midAirUpdate(Map *m, float d);
+	const int iFrameTime = 1.5f;
+	void updateHurt(float d);
 };
 

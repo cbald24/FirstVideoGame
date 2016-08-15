@@ -56,6 +56,10 @@ This method will update the player's current postion and the next frame in his a
 void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *renderTarget)
 {
 	isActive = true; //sets the bool for iff the player is actively moving to true
+	if (hurt)
+	{
+		updateHurt(delta);
+	}
 	if (onCooldown)
 	{
 		cooldownUpdate(delta);
@@ -129,7 +133,9 @@ int Player::getPosY()
 {
 	return positionRect.y; //returns the players y location in the world
 }
-
+/*
+this method will see if the player collides with the weak enemy and if so it will turn him red for now
+*/
 bool Player::IntersectsWith(WeakGuy &enemy)
 {
 	if (checkCollision(enemy.positionRect))
@@ -144,13 +150,6 @@ bool Player::IntersectsWith(WeakGuy &enemy)
 	}
 }
 
-/*
-Param (SDL_Rect a): the first rect to use for collision detection
-Param (SDL_Rect b): the second rect to use for collision detection
-Return (bool) a bool that reflects if a nd b collide with each other
-decripstion: this method is borrowed from http://lazyfoo.net/SDL_tutorials/lesson17/ and will find i out if 2 sdl rects are overlapping or next to each other
-if they are it returns true if not it returns false
-*/
 bool Player::checkCollision(SDL_Rect a)
 {
 	if (positionRect.x + positionRect.w < a.x || positionRect.x > a.x + a.w
@@ -397,5 +396,50 @@ void Player::jump()
 	{
 		isJumping = true;
 		yVelocity = -350.0f;
+	}
+}
+/*
+Param (Arrow *a): an arrow fired by an archer Enemy
+return (bool): returns a boolean value of true if the arrow hits the player, or false if not hit
+description: this method will check if the pointer is a nullptr, if it isn't then the checkcollision function is called to figure out if the player and arrow
+hit each other. if they do hurt the player by 1hp and set 2 sec invernable frames, if not don't do anaything.
+*/
+bool Player::arrowInteraction(Arrow *a)
+{
+	if (a != nullptr || hurt)
+	{
+		SDL_SetTextureColorMod(texture, 255, 255, 255);
+		if (checkCollision(a->posRect))
+		{		
+			if (!hurt)
+			{
+				health -= 1;			
+			}
+			hurt = true;
+			iFrames = iFrameTime;
+			return true;
+		}
+		else
+		{
+			//SDL_SetTextureColorMod(texture, 250, 0, 0);
+			return false;
+		}
+	}
+	else
+	{
+		SDL_SetTextureColorMod(texture, 255, 255, 255);
+		return false;
+	}
+}
+
+void Player::updateHurt(float d)
+{
+	if (iFrames <= 0)
+	{
+		hurt = false;
+	}
+	else
+	{
+		iFrames -= d;
 	}
 }

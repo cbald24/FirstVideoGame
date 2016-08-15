@@ -172,9 +172,11 @@ int main(int argc, char* args[])
 		}
 		keystate = SDL_GetKeyboardState(NULL);
 		archer.Update(delta, player1, renderTarget);
-		player1.Update(delta, keystate, &daMap, renderTarget);
+		player1.Update(delta, keystate, &daMap, renderTarget);		
+		enemy1.hitFire(player1.fistOfFury);
+		player1.arrowInteraction(archer.myArrow);
 		player1.IntersectsWith(enemy1);
-
+		archer.hitFire(player1.fistOfFury);
 		cameraRect.x = player1.getPosX() - 375; //sets the camera postion on the players x
 		cameraRect.y = player1.getPosY() - 200; //sets the camera postion on the players y to center the camera on the player
 
@@ -193,10 +195,10 @@ int main(int argc, char* args[])
 		
 		daMap.renderTiles(cameraRect, renderTarget);
 
-		player1.Draw(renderTarget, cameraRect); //draws the player
+		 
 		enemy1.Draw(renderTarget, cameraRect);
 		archer.Draw(renderTarget, cameraRect);
-		//green.Draw(renderTarget, cameraRect);
+		player1.Draw(renderTarget, cameraRect); //draws the player
 		SDL_RenderPresent(renderTarget); //renders the new objects
 	}	
 	return 0; //end main

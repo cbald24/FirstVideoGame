@@ -1,5 +1,6 @@
 #include "RangedEnemy.h"
-
+#include"Monster.h"
+#include"Fire.h"
 
 
 RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x, int y, int framesX, int framesY)
@@ -34,13 +35,14 @@ RangedEnemy::RangedEnemy(SDL_Renderer *renderTarget, std::string filepath, int x
 	draw = false;
 }
 
-
 RangedEnemy::~RangedEnemy()
 {
 	SDL_DestroyTexture(texture);//destroys the archers texture to prevent memory leak
 	myArrow->~Arrow();
 }
+/*
 
+*/
 void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 {	
 	if (p.positionRect.x < positionRect.x) // if the camera is to the left of the archer
@@ -53,20 +55,17 @@ void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 		cropRect.y = frameHeight;
 		left = false;
 	}
-
 	frameCounter += 2 * delta; //update the frame counter
 	if (onCooldown)
 	{
 		timer += delta;
 	}
-
 	if (timer >= cooldown)
 	{
 		onCooldown = false;
 		timer = 0;
 		draw = false;
 	}
-
 	if (frameCounter >= 0.25f && !onCooldown) //if the frame counter is more then
 	{
 		frameCounter = 0; //set frame counter to 0
@@ -86,7 +85,7 @@ void RangedEnemy::Update(float delta, Player &p, SDL_Renderer *renderTarget)
 	}
 	if (draw)
 	{
-		myArrow->Update(delta, p);
+		myArrow->Update(delta);
 	}
 
 }
@@ -100,13 +99,48 @@ void RangedEnemy::Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
 		myArrow->Draw(renderTarget, cameraRect);
 	}
 }
-
+/*
+description: this method will return the value of the x postion for the archer enemy
+*/
 int RangedEnemy::getPosX()
 {
 	return positionRect.x; //returns the players x location in the world
 }
-
+/*
+description: this method will return the value of the y postion for the archer enemy
+*/
 int RangedEnemy::getPosY()
 {
 	return positionRect.y; //returns the players y location in the world
+}
+
+bool RangedEnemy::checkCollision(SDL_Rect a)
+{
+	if (positionRect.x + positionRect.w < a.x || positionRect.x > a.x + a.w
+		|| positionRect.y + positionRect.h < a.y || positionRect.y > a.y + a.h)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool RangedEnemy::hitFire(Fire *f)
+{
+	if (f != nullptr)
+	{
+		if (checkCollision(f->posRect))
+		{
+			SDL_SetTextureColorMod(texture, 255, 255, 255);
+			return false;
+		}
+		else
+		{
+			SDL_SetTextureColorMod(texture, 250, 0, 0);
+			return true;
+		}
+	}
+	else
+	{
+		SDL_SetTextureColorMod(texture, 255, 255, 255);
+	}
 }

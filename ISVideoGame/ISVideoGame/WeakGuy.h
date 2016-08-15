@@ -5,6 +5,7 @@
 #include<string>
 #include<iostream>
 #include<cmath>
+#include"Fire.h"
 
 class WeakGuy
 {
@@ -13,7 +14,7 @@ public:
 	~WeakGuy();
 	void Update(float delta, const Uint8 *keyState);
 	void Draw(SDL_Renderer *renderTarget, SDL_Rect cameraRect);
-
+	bool hitFire(Fire *f);
 	int getPosX();
 	int getPosY();
 	SDL_Rect positionRect;
@@ -28,5 +29,7 @@ private:
 	bool isActive;
 	SDL_Scancode keys[4];
 	int health;
+	bool checkCollision(SDL_Rect a);
+
 };
 
