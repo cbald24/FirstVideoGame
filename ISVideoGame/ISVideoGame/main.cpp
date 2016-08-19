@@ -201,7 +201,7 @@ int main(int argc, char* args[])
 		daMap.renderTiles(cameraRect, renderTarget);
 
 		 
-		enemy1.Draw(renderTarget, cameraRect);
+		enemy1.Draw(renderTarget, cameraRect);//draws enemy 1
 		archer.Draw(renderTarget, cameraRect);
 		player1.Draw(renderTarget, cameraRect); //draws the player
 		SDL_RenderPresent(renderTarget); //renders the new objects
