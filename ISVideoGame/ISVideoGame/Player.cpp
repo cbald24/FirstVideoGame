@@ -47,6 +47,7 @@ the deconstructor for the player object
 Player::~Player()
 {
 	SDL_DestroyTexture(texture);//destroys the players texture to prevent memory leak
+	fistOfFury->~Fire();
 }
 /*
 (param) float delta: this will be used in math equations to make movement and game frame refresh rate work more smoothly
@@ -69,17 +70,28 @@ void Player::Update(float delta, const Uint8 *keyState, Map *m, SDL_Renderer *re
 	{
 		fireFists(m, delta, renderTarget);
 	}
-	else if (keyState[keys[1]])
+	else if (keyState[keys[3]] && keyState[keys[1]])
 	{
 		jump();
+		moveRight(m, delta);		
+	}
+	else if (keyState[keys[2]] && keyState[keys[1]])
+	{
+		jump();
+		moveLeft(m, delta);
+		
+	}
+	else if (keyState[keys[3]])
+	{
+		moveRight(m, delta);
 	}
 	else if (keyState[keys[2]]) //if the key being pushed is a to walk left
 	{	
 		moveLeft(m, delta);
 	}
-	else if (keyState[keys[3]]) //if the key being pushed is d to walk right
+	else if (keyState[keys[1]]) //if the key being pushed is d to walk right
 	{		
-		moveRight(m, delta);
+		jump();
 	}	
 	else //if none of the correct keys are being pushed
 	{
@@ -216,6 +228,19 @@ void Player::updateFrame(bool a, float d)
 				frameCounter = 0; //set frame counter to 0
 				cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
 				
+			}
+		}
+	}
+	else if (dead)
+	{
+		if (cropRect.x != (frameWidth * 5))
+		{
+			cropRect.y = frameWidth * 4;
+			frameCounter += 4 * d;
+			if (frameCounter >= 0.25f) //if the frame counter is more then
+			{
+				frameCounter = 0; //set frame counter to 0
+				cropRect.x += frameWidth; //adjust to the next frame in the sprite animation
 			}
 		}
 	}
@@ -413,7 +438,11 @@ bool Player::arrowInteraction(Arrow *a)
 		{		
 			if (!hurt)
 			{
-				health -= 1;			
+				health -= 1;	
+				if (health <= 0)
+				{
+					dead = true;
+				}
 			}
 			hurt = true;
 			iFrames = iFrameTime;
@@ -421,7 +450,7 @@ bool Player::arrowInteraction(Arrow *a)
 		}
 		else
 		{
-			//SDL_SetTextureColorMod(texture, 250, 0, 0);
+			SDL_SetTextureColorMod(texture, 250, 0, 0);
 			return false;
 		}
 	}

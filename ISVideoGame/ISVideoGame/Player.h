@@ -27,7 +27,7 @@ private:
 	SDL_Texture *texture;
 	int frameWidth, frameHeight;
 	int textureWidth;
-	bool isActive, onCooldown, left, hurt, kill;
+	bool isActive, onCooldown, left, hurt, dead;
 	SDL_Scancode keys[4];
 	int health;
 	bool checkCollision(SDL_Rect a);

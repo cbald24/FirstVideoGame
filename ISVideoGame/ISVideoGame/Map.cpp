@@ -15,7 +15,7 @@ the destructor for the map
 Map::~Map()
 {
 	mapHeight, mapWidth, tileSize = 0;
-	tiles[0] = {};
+	
 }
 /*
 this method will return the int value for the height of the map

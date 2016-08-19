@@ -26,7 +26,7 @@ Fire::Fire(SDL_Renderer *renderTarget, std::string filepath, int x, int y)
 
 Fire::~Fire()
 {
-	SDL_DestroyTexture(texture);
+	//SDL_DestroyTexture(texture);
 }
 
 void Fire::Update(int x, int y, bool l)

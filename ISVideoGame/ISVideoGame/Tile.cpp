@@ -35,7 +35,7 @@ Tile::Tile()
 
 Tile::~Tile()
 {
-
+	//SDL_DestroyTexture(texture);
 }
 
 void Tile::Render(SDL_Renderer *renderTarget, SDL_Rect cameraRect)
